@@ -20,13 +20,7 @@ Declare @Surname Varchar (50)
 	Note when you view all staff the order is by ChangedBy 
 	so you can what each Realtime user did and what order of
 	actions they did*/
-
-
-Set @Surname = 'ALL'
-;
-
-
-
+Set @Surname = 'ALL';
 With CTE as
 (
 	Select audtime,changedby,audtxt,right(audtxt, len(audtxt) - 43) As Empref,NULL as FirstName,NULL as Surname1 from auddetails 
@@ -35,15 +29,11 @@ With CTE as
 			or audtxt like 'UpdateBaseListRec: SQL=Update Entitlements%'
 UNION ALL
 		Select audtime,changedby,audtxt,NULL,NULL,NULL
-
 	from auddetails 
 	where 
 		audtxt like 'Delete Button%' 
-
-	
 Union ALL
 	Select audtime,changedby,audtxt,NULL
-
 		,SUBSTRING(audtxt,
 						CHARINDEX(',',(audtxt))+ 1
 													,CHARINDEX(',', audtxt)
@@ -52,86 +42,61 @@ Union ALL
 		,SUBSTRING(audtxt, -- 1 -Use this column
 						CHARINDEX(' ',(audtxt))+ 1  -- 2 -Find 1st space and start
 													,CHARINDEX(',', audtxt)  -- 3 - Length is number but we want to measure where comma is
-																			-CHARINDEX(' ',audtxt)-1) -- 4 - Optional but need to deduct where 1st space is to avoid length beentoo long
-																										as Surname 
+																		-CHARINDEX(' ',audtxt)-1) -- 4 - Optional but need to deduct where 1st space is to avoid length beentoo long
+		as Surname 
 		from auddetails 
 			where 
 				audtxt like 'select%' 
 ) 
-
 -- Now Select and join to the Empref to find First and Last Name
-
 Select 
 CONVERT(VARCHAR(8), audtime, 3) AS [Date],CONVERT(VARCHAR(5), audtime, 108) AS [Time],
 CTE.changedby,CTE.audtxt,coalesce(CTE.Empref,E.empref,00) as Empref--,coalesce (E.forenames,CTE.firstname,'DELETED') As FirstName,coalesce(E.surname,CTE.surname1,'')as Surname
 ,
 case 
 	When coalesce (E.forenames,CTE.firstname) > '' Then coalesce (E.forenames,CTE.firstname)
-
 	when coalesce (E.forenames,CTE.firstname,'DELETED') = 'DELETED' and Lag(coalesce (E.forenames,CTE.firstname),1,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),1,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.forenames,CTE.firstname,'DELETED') = 'DELETED' and Lag(coalesce (E.forenames,CTE.firstname),2,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),2,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.forenames,CTE.firstname,'DELETED') = 'DELETED' and Lag(coalesce (E.forenames,CTE.firstname),3,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),3,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.forenames,CTE.firstname,'DELETED') = 'DELETED' and Lag(coalesce (E.forenames,CTE.firstname),4,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),4,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.forenames,CTE.firstname,'DELETED') = 'DELETED' and Lag(coalesce (E.forenames,CTE.firstname),5,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),5,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.forenames,CTE.firstname,'DELETED') = 'DELETED' and Lag(coalesce (E.forenames,CTE.firstname),6,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),6,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.forenames,CTE.firstname,'DELETED') = 'DELETED' and Lag(coalesce (E.forenames,CTE.firstname),7,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),7,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.forenames,CTE.firstname,'DELETED') = 'DELETED' and Lag(coalesce (E.forenames,CTE.firstname),8,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),8,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.forenames,CTE.firstname,'DELETED') = 'DELETED' and Lag(coalesce (E.forenames,CTE.firstname),9,0) over (order by CTE.audtime) IS NOT NULL then
-	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),9,0) over (order by CTE.audtime),'ACTIVE1')																
-																	else '' END As StaffName1
+	coalesce(Lag(coalesce (E.forenames,CTE.firstname,'DELETED'),9,0) over (order by CTE.audtime),'ACTIVE1')														else ELSE '' END As StaffName1
 ,
 case 
 	When coalesce (E.surname,CTE.surname1) > '' Then coalesce (E.surname,CTE.surname1)
-
 	when coalesce (E.surname,CTE.surname1,'DELETED') = 'DELETED' and Lag(coalesce (E.surname,CTE.surname1),1,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),1,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.surname,CTE.surname1,'DELETED') = 'DELETED' and Lag(coalesce (E.surname,CTE.surname1),2,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),2,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.surname,CTE.surname1,'DELETED') = 'DELETED' and Lag(coalesce (E.surname,CTE.surname1),3,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),3,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.surname,CTE.surname1,'DELETED') = 'DELETED' and Lag(coalesce (E.surname,CTE.surname1),4,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),4,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.surname,CTE.surname1,'DELETED') = 'DELETED' and Lag(coalesce (E.surname,CTE.surname1),5,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),5,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.surname,CTE.surname1,'DELETED') = 'DELETED' and Lag(coalesce (E.surname,CTE.surname1),6,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),6,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.surname,CTE.surname1,'DELETED') = 'DELETED' and Lag(coalesce (E.surname,CTE.surname1),7,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),7,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.surname,CTE.surname1,'DELETED') = 'DELETED' and Lag(coalesce (E.surname,CTE.surname1),8,0) over (order by CTE.audtime) IS NOT NULL then
 	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),8,0) over (order by CTE.audtime),'ACTIVE1')
-
 	when coalesce (E.surname,CTE.surname1,'DELETED') = 'DELETED' and Lag(coalesce (E.surname,CTE.surname1),9,0) over (order by CTE.audtime) IS NOT NULL then
-	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),9,0) over (order by CTE.audtime),'ACTIVE1')																
-																else '' END As StaffName2
-
+	coalesce(Lag(coalesce (E.surname,CTE.surname1,'DELETED'),9,0) over (order by CTE.audtime),'ACTIVE1')															else '' END As StaffName2
 into #AbsenceCheck	
 from CTE
 left Join Empdetails E on E.Empref = CTE.Empref or (E.forenames = CTE.FirstName and E.surname = CTE.Surname1)
-
-
 select * from #AbsenceCheck where StaffName2 like @Surname or @Surname = 'All'
 order by changedby,date,time
 drop table #AbsenceCheck
